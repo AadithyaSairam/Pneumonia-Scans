@@ -68,40 +68,75 @@ for i, (images,labels) in enumerate(trainloader):
 images.shape, labels.shape
 
 class classify(nn.Module):
-    def __init__(self,num_classes=2):
-        super(classify,self).__init__()
+    def __init__(self):
+        super(classify, self).__init__()
         
-         
-        self.conv1=nn.Conv2d(in_channels=3, out_channels=12, kernel_size=3, stride=1, padding=1)
+        self.conv1 = nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1)
+        self.bn1 = nn.BatchNorm2d(32)
+        self.relu = nn.ReLU()
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
         
-        self.bn1=nn.BatchNorm2d(num_features=12)
-        self.relu1=nn.ReLU()        
-        self.pool=nn.MaxPool2d(kernel_size=2)
-        self.conv2=nn.Conv2d(in_channels=12,out_channels=20,kernel_size=3,stride=1,padding=1)
-        self.relu2=nn.ReLU()
-        self.conv3=nn.Conv2d(in_channels=20,out_channels=32,kernel_size=3,stride=1,padding=1)
-        self.bn3=nn.BatchNorm2d(num_features=32)
-        self.relu3=nn.ReLU()
-        self.fc=nn.Linear(in_features=32 * 112 * 112,out_features=num_classes)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
+        self.bn2 = nn.BatchNorm2d(64)
+        self.dropout1 = nn.Dropout(0.1)
         
+        self.conv3 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
+        self.bn3 = nn.BatchNorm2d(64)
         
+        self.conv4 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
+        self.bn4 = nn.BatchNorm2d(128)
+        self.dropout2 = nn.Dropout(0.2)
         
-        #Feed forwad function
+        self.conv5 = nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1)
+        self.bn5 = nn.BatchNorm2d(256)
+        self.dropout3 = nn.Dropout(0.2)
         
-    def forward(self,input):
-        output=self.conv1(input)
-        output=self.bn1(output)
-        output=self.relu1(output)
-        output=self.pool(output)
-        output=self.conv2(output)
-        output=self.relu2(output)
-        output=self.conv3(output)
-        output=self.bn3(output)
-        output=self.relu3(output)            
-        output=output.view(-1,32*112*112)
-        output=self.fc(output)
-            
-        return output
+        self.fc1 = nn.Linear(256 * 9 * 9, 128)
+        self.dropout4 = nn.Dropout(0.2)
+        self.fc2 = nn.Linear(128, 1)
+        self.sigmoid = nn.Sigmoid()
+        
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.pool(x)
+    
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = self.relu(x)
+        x = self.dropout1(x)
+        x = self.pool(x)
+    
+        x = self.conv3(x)
+        x = self.bn3(x)
+        x = self.relu(x)
+        x = self.pool(x)
+    
+        x = self.conv4(x)
+        x = self.bn4(x)
+        x = self.relu(x)
+        x = self.dropout2(x)
+        x = self.pool(x)
+    
+        x = self.conv5(x)
+        x = self.bn5(x)
+        x = self.relu(x)
+        x = self.dropout3(x)
+        x = self.pool(x)
+    
+        # Calculate the size of the tensor after the last max pooling operation
+        x_size = x.size(1) * x.size(2) * x.size(3)
+    
+        x = x.view(-1, x_size)
+        x = self.fc1(x)
+        x = self.relu(x)
+        x = self.dropout4(x)
+        x = self.fc2(x)
+        x = self.sigmoid(x)
+    
+        return x
+
     
 device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
