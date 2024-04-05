@@ -14,8 +14,12 @@ pd.options.plotting.backend = "plotly"
 from torch import nn, optim
 from torch.autograd import Variable
 from torchsummary import summary
+import time
 
-def data_transforms(phase = None):
+# Record start time
+start_time = time.time()
+
+def data_transforms(phase):
     
     if phase == TRAIN:
 
@@ -31,8 +35,9 @@ def data_transforms(phase = None):
     elif phase == TEST or phase == VAL:
 
         data_T = T.Compose([
-
-                T.Resize(size = (224,224)),
+                T.Resize(size = (256,256)),
+                T.RandomRotation(degrees = (-20,+20)),
+                T.CenterCrop(size=224),
                 T.ToTensor(),
                 T.Normalize([0.485, 0.456, 0.406],[0.229, 0.224, 0.225])
         ])
@@ -90,59 +95,56 @@ class classify(nn.Module):
         self.conv5 = nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1)
         self.bn5 = nn.BatchNorm2d(256)
         self.dropout3 = nn.Dropout(0.2)
-        
-        self.fc1 = nn.Linear(256 * 9 * 9, 128)
-        self.dropout4 = nn.Dropout(0.2)
-        self.fc2 = nn.Linear(128, 1)
-        self.sigmoid = nn.Sigmoid()
+
+        # Calculate the input size for the fully connected layer
+        # using a sample input tensor
+        self._to_linear = None
+        self.fc1 = None
         
     def forward(self, x):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
         x = self.pool(x)
-    
+        
         x = self.conv2(x)
         x = self.bn2(x)
         x = self.relu(x)
         x = self.dropout1(x)
         x = self.pool(x)
-    
+        
         x = self.conv3(x)
         x = self.bn3(x)
         x = self.relu(x)
         x = self.pool(x)
-    
+        
         x = self.conv4(x)
         x = self.bn4(x)
         x = self.relu(x)
         x = self.dropout2(x)
         x = self.pool(x)
-    
+        
         x = self.conv5(x)
         x = self.bn5(x)
         x = self.relu(x)
         x = self.dropout3(x)
         x = self.pool(x)
-    
-        # Calculate the size of the tensor after the last max pooling operation
-        x_size = x.size(1) * x.size(2) * x.size(3)
-    
-        x = x.view(-1, x_size)
-        x = self.fc1(x)
-        x = self.relu(x)
-        x = self.dropout4(x)
-        x = self.fc2(x)
-        x = self.sigmoid(x)
-    
+
+        # Flatten the feature map
+        if self._to_linear is None:
+            self._to_linear = x[0].shape[0] * x[0].shape[1] * x[0].shape[2]
+        
+        x = x.view(-1, self._to_linear)
+        if self.fc1 is None:
+            self.fc1 = nn.Linear(self._to_linear, 128)
+        
         return x
 
-    
-device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-summary(classify(), (images.shape[1], images.shape[2], images.shape[3]))
+summary(classify().to(device), (images.shape[1], images.shape[2], images.shape[3]))
 
-model = classify()
+model = classify().to(device)
 # defining the optimizer
 optimizer = optim.Adam(model.parameters(), lr=0.01)
 # defining the loss function
@@ -153,7 +155,8 @@ if torch.cuda.is_available():
     criterion = criterion.cuda()
 
 Losses = []
-for i in range(10):
+epochs = 50
+for i in range(epochs):
     running_loss = 0
     for images, labels in trainloader:
         
@@ -166,7 +169,7 @@ for i in range(10):
         # Sets the gradient to zero
         optimizer.zero_grad()
         
-        output = model(images)
+        output = model(images).to(device)
         loss = criterion(output, labels)
         
         #This is where the model learns by backpropagating
@@ -202,3 +205,8 @@ for images,labels in testloader:
 
 print("Number Of Images Tested =", all_count)
 print("\nModel Accuracy =", (correct_count/all_count))
+
+end_time = time.time()
+elapsed_time = end_time - start_time
+
+print("Elapsed time: {:.2f} seconds".format(elapsed_time))
