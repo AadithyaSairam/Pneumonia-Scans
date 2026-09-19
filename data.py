@@ -87,7 +87,7 @@ def find_data_root(data_dir):
 
     raise FileNotFoundError(
         f"Could not find train/ val/ test/ under {root} or {root / 'chest_xray'}.\n"
-        f"Download the dataset first — see the README."
+        f"Download the dataset first, see the README."
     )
 
 

@@ -34,7 +34,7 @@ def _block(in_ch, out_ch, dropout=0.0):
     BatchNorm goes before the activation, which is the order the original
     paper uses and what the torchvision models do. Padding of 1 with a 3x3
     kernel keeps the spatial size unchanged, so the only thing that changes
-    it is the pool — which keeps the size arithmetic above honest.
+    it is the pool, which keeps the size arithmetic above honest.
     """
     layers = [
         nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=1, padding=1),

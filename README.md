@@ -6,13 +6,13 @@ PNEUMONIA, trained from scratch in PyTorch on the Kermany et al. dataset.
 The interesting part of this problem is not the architecture. It is that the
 dataset is roughly **3:1 pneumonia:normal**, which means a model that answers
 "pneumonia" unconditionally scores about 74 % accuracy while being clinically
-worthless — it never identifies a healthy patient. So this reports a full
+worthless, it never identifies a healthy patient. So this reports a full
 confusion matrix and per-class precision/recall, and trains against a
 class-weighted loss. Accuracy alone cannot tell you whether the model works.
 
 ## Quickstart
 
-The dataset is **not** in this repository — see [Data](#data).
+The dataset is **not** in this repository, see [Data](#data).
 
 ```bash
 pip install -r requirements.txt
@@ -80,7 +80,7 @@ train.py    training loop, evaluation, the metrics report
 Chest X-Ray Images (Pneumonia), 5,863 images across NORMAL and PNEUMONIA.
 
 > Kermany, D.S., Goldbaum, M., et al. Identifying Medical Diagnoses and
-> Treatable Diseases by Image-Based Deep Learning. *Cell* 172(5):1122–1131,
+> Treatable Diseases by Image-Based Deep Learning. *Cell* 172(5):1122-1131,
 > 2018.
 
 Download it from
@@ -104,7 +104,7 @@ are stable canonical sources.
   fine-tuned on this data outperforms this network substantially, and for
   5,000 images that is the sensible choice. Training from scratch here is a
   deliberate exercise, not a claim to be the best approach.
-- **Paediatric data only.** All images are from patients aged 1–5 at one
+- **Paediatric data only.** All images are from patients aged 1-5 at one
   medical centre in Guangzhou. Nothing here should be expected to transfer to
   adult radiographs or to another site's imaging protocol.
 - **Not a medical device.** Obviously, but worth stating: this is a learning
@@ -115,7 +115,7 @@ are stable canonical sources.
 
 The original commit had a single script with a model whose `forward()` built
 a fully-connected layer and then returned the flattened conv features without
-ever applying it — so the network emitted 12,544-dimensional vectors that
+ever applying it, so the network emitted 12,544-dimensional vectors that
 `CrossEntropyLoss` scored as logits over 12,544 classes, and any accuracy it
 printed was meaningless. It also hardcoded an absolute path to a local
 directory, applied random rotation to the test set, and reported accuracy on a
@@ -126,5 +126,5 @@ dataset out of git history.
 
 ## License
 
-MIT — see [LICENSE](LICENSE). The dataset is not covered by it; it is
+MIT, see [LICENSE](LICENSE). The dataset is not covered by it; it is
 distributed under CC BY 4.0 by its authors.
