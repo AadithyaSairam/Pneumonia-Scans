@@ -1,0 +1,26 @@
+# --- Dataset ---
+# Downloaded from Kaggle/Mendeley, never committed. See the README.
+chest_xray/
+data/
+*.jpeg
+*.jpg
+*.png
+
+# --- Checkpoints ---
+*.pt
+*.pth
+*.keras
+*.h5
+
+# --- Python ---
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# --- OS / editors ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
